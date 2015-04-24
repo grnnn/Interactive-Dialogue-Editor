@@ -1,0 +1,34 @@
+.my-navbar{
+  background-color: #FFB732;
+  font-size: 16px;
+}
+
+.navbar-default .navbar-nav li a{
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-default .navbar-nav li a:hover{
+  color: #A26BA2;
+}
+
+.navbar-default .navbar-nav li.active a{
+  color: white;
+  font-weight: bold;
+  background-color: #FFA500;
+}
+
+.navbar-default .navbar-nav li.active a:hover{
+  color: #A26BA2;
+  font-weight: bold;
+  background-color: #FFA500;
+}
+
+h3{
+  font-weight: bold;
+}
+
+.my-btn{
+  font-weight: bold;
+  font-size: 16px;
+}
