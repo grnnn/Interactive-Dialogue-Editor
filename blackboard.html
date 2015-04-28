@@ -45,7 +45,7 @@
         </div>
 
         <ul class="navbar-nav nav">
-          <li class="active"><a href="blackboard.html" target="_blank">Blackboard</a></li>
+          <li class="active"><a href="blackboard.html">Blackboard</a></li>
           <li><a href="todo.html"><b>To Do</b></a></li>
           <li><a href="collection.html"><b>Collection</b></a></li>
         </ul>
@@ -62,38 +62,7 @@
 
     <div class="container" style="margin-top: 50px;" id="myContainer"></div>
 
-    <div class="modal fade" id="disabledModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-body">
-            <center>Connection failed, attempting to reconnect...</center>
-            <br>
-            <div class="progress">
-              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="1" aria-valuemin="0" aria-valuemax="1" style="width: 100%">
-              </div>
-            </div>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
     <script src="src/js/blackboard.js"></script>
-
-    <script>
-    //Initialize our top level Blackboard object
-    $(document).ready(function(){
-      var blackboard = new Blackboard();
-
-      //Start our update loop
-      function update(){
-        var t = function(){blackboard.update();};
-        window.setTimeout(t, 100);
-      }
-
-    });
-
-
-    </script>
 
   </body>
 </html>
