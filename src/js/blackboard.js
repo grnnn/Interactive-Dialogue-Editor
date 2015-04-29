@@ -1,13 +1,14 @@
 var Blackboard = function(){
   //The containter to push HTML into
-  this.$container = $container = $("#myContainer");
+  this.$container = $("#myContainer");
+  this.$header = $("#headerContainer");
 
   //The object representing the board state
   this.state = undefined;
 
   //A 10 second (10000 millisecond) timer, is overriden by this.getTimer()
-  this.timerMax = 10000;
-  this.timer = 10000;
+  this.timerMax = 5000;
+  this.timer = 5000;
 
   //This is true when the internet connection is not there
   this.disabled = false;
@@ -18,11 +19,15 @@ var Blackboard = function(){
 }
 
 Blackboard.prototype.initializePage = function(){
+  var that = this;
   if(document.location.hash != ""){
     var sources = document.location.hash.replace(/#/gi, "");
     sources = sources.split("/");
     if(sources[0] == "dialogue"){
-      //Set state equal to new dialogue state, which handles it's own stuff
+      this.$container.empty();
+      this.$header.empty();
+      this.state = new DialogueBoard(sources[1]);
+      that.initializeListeners();
       return;
     }
     if(sources[0] == "expressions"){
@@ -38,8 +43,10 @@ Blackboard.prototype.initializePage = function(){
   //Set up listeners too
   $("#dialogue").on('click', function(){
     document.location.hash = "dialogue";
-    $container.empty();
-    //Set state equal to new dialogue state, which handles it's own stuff
+    that.$container.empty();
+    that.$header.empty();
+    that.state = new DialogueBoard();
+    that.initializeListeners();
   });
   $("#expressions").on('click', function(){
     document.location.hash = "expressions";
@@ -77,7 +84,7 @@ Blackboard.prototype.setTimer = function(){
   }
 
   //Get the response time (in milliseconds) that it takes to reach our own server
-  this.maxTimer = getResponseTime() * 100;
+  this.maxTimer = getResponseTime() * 50;
 }
 
 //The very first thing that is seen when entering a blackboard page, given no legible hashcode
@@ -139,8 +146,17 @@ Blackboard.prototype.initializeListeners = function(){
       switch(String.fromCharCode(event.which).toLowerCase()){
         //Save event
         case 's':
-          if(that.newStack.length > 0) that.state.save();
-          console.log("Saved");
+          if(that.state.newStack.length > 0){
+            //Now we save the info to the SQL server
+            that.state.save();
+
+            //Update the stacks properly (move all new stack things into the change stack)
+            that.state.changeStack = Array.prototype.push.apply(that.state.changeStack, that.state.newStack);
+            that.state.newStack = [];
+            while(that.state.changeStack.length > 20){
+              that.state.changeStack.shift(); //Pop the bottom off the stack until 20 states are reached
+            }
+          }
           event.preventDefault();
           break;
         //Undo event
@@ -151,6 +167,21 @@ Blackboard.prototype.initializeListeners = function(){
         case 'y':
           event.preventDefault();
           break;
+      }
+    }
+  });
+
+  //Manual button listeners (put in place by all board states)
+  $("#saveListener").on("click", function(){
+    if(that.state.newStack.length > 0){
+      //Now we save the info to the SQL server
+      that.state.save();
+
+      //Update the stacks properly (move all new stack things into the change stack)
+      that.state.changeStack = Array.prototype.push.apply(that.state.changeStack, that.state.newStack);
+      that.state.newStack = [];
+      while(that.state.changeStack.length > 20){
+        that.state.changeStack.shift(); //Pop the bottom off the stack until 20 states are reached
       }
     }
   });
@@ -169,7 +200,7 @@ Blackboard.prototype.update = function(){
     //Next check if the timer has gone below 0
     if(this.timer <= 0){
       //Set the timer back up (if no internet, update every 5 seconds to look for a connection)
-      if(this.disabled) this.timer = 5000;
+      if(this.disabled) this.timer = 1000;
       else this.timer = this.timerMax;
 
       //Check the internet connection, and toggle the 'disabled' variable based on state of internet connection
@@ -179,6 +210,7 @@ Blackboard.prototype.update = function(){
       if(this.state.newStack.length > 0){
         //Now we save the info to the SQL server
         this.state.save();
+
 
         //Update the stacks properly (move all new stack things into the change stack)
         this.state.changeStack = Array.prototype.push.apply(this.state.changeStack, this.state.newStack);

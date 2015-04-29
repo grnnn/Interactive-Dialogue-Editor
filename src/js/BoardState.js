@@ -14,17 +14,20 @@ var BoardState = function(){
 
   //Indicates what type of boardstate this is
   this.type = "";
-
-  //The top level html of the field you want to add
-  this.fieldHTML = "";
-
+  
   //Finally, we need the HTML container to do push in our web page stuff
-  this.$container = $container = $("#myContainer");
+  this.$container = $("#myContainer");
+  this.$header = $("#headerContainer");
 }
 
 //Function that saves the board state into the appropriate MySQL table
 BoardState.prototype.save = function(){
   console.log("Saving...");
+};
+
+//Function that loads the board state from the appropriate MySQL table
+BoardState.prototype.load = function(){
+  console.log("Loading...");
 };
 
 //Function which pushes the correct HTML into the page

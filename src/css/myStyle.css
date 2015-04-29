@@ -37,3 +37,49 @@ h3{
   font-weight: bold;
   font-size: 16px;
 }
+
+#myTitle{
+  font-weight: bold;
+  font-size: 32px;
+  color: white;
+  margin: 15px;
+  display: block;
+  position: relative;
+  cursor: pointer;
+}
+
+#myTitle:hover{
+  background-color: #FFA500;
+}
+
+.dialogue-header-group{
+  font-weight: bold;
+  font-size: 16px;
+  color: black;
+  display: block;
+  position: relative;
+  cursor: pointer;
+}
+
+.navbar-default .dialogue-header-group li a{
+  color: black;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 5px;
+}
+
+.navbar-default .dialogue-header-group li a:hover{
+  background-color: lightgrey;
+  color:black;
+}
+
+.second-nav{
+  color: black;
+  font-size: 16px;
+  position: fixed;
+  top: 75px;
+  height: 20px;
+  border-color: #FFB732;
+  border-width: 2px;
+  min-height: 35px;
+}
