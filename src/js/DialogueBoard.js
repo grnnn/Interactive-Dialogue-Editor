@@ -107,7 +107,26 @@ DialogueBoard.prototype.modalHTML = "<div class='modal fade' id='titleModal'>"
 DialogueBoard.prototype.addFieldHTML = "<button id='addField' class='btn btn-lg btn-default'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span> Add a Line</button>"
 
 //HTML for every field that is added
-DialogueBoard.prototype.fieldHTML = "Change me Max!";
+DialogueBoard.prototype.fieldHTML = "<div class='panel panel-default'>"
+                                      +"<div class='panel-body'>"
+                                        +"<div class='row'>"
+                                          +"<div class='col-md-8'>"
+                                            +"<div class='text'>Line</div>"
+                                          +"</div>"
+                                          +"<div class='col-md-4'>"
+                                            +"<div class='text'>Annotations Here!</div>"
+                                          +"</div>"
+                                        +"</div>"
+                                        +"<div class='row'>"
+                                          +"<div class='col-md-8'>"
+                                            +"<div>"
+                                              +"<textarea rows='2' cols='72' style='resize:vertical;width:100%;' id='TextArea1'>Enter Dialogue here</textarea>"
+                                            +"</div>"
+                                            +"<div class='text'> Grammars Here </div>"
+                                          +"</div>"
+                                        +"</div"
+                                      +"</div>"
+                                    +"</div>";
 
 
 //This call pushes in starting HTML and initializes the listeners

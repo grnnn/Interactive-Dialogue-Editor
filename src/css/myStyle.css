@@ -2,7 +2,11 @@
   background-color: #FFB732;
   font-size: 16px;
 }
-
+.text{
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 .navbar-default .navbar-nav li a{
   color: white;
   font-weight: bold;
