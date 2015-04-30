@@ -14,7 +14,7 @@ var BoardState = function(){
 
   //Indicates what type of boardstate this is
   this.type = "";
-  
+
   //Finally, we need the HTML container to do push in our web page stuff
   this.$container = $("#myContainer");
   this.$header = $("#headerContainer");
@@ -33,4 +33,9 @@ BoardState.prototype.load = function(){
 //Function which pushes the correct HTML into the page
 BoardState.prototype.initializePage = function(){
   console.log("Initializing Page...");
+};
+
+//Function which is called every 10 seconds
+BoardState.prototype.update = function(){
+  console.log("Updating...");
 };

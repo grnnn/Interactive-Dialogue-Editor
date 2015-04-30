@@ -15,7 +15,7 @@ var Blackboard = function(){
 
   //Called to read in hash stuff for page to figure out
   this.initializePage();
-  //this.setTimer();
+  this.setTimer();
 }
 
 Blackboard.prototype.initializePage = function(){
@@ -31,6 +31,14 @@ Blackboard.prototype.initializePage = function(){
       return;
     }
     if(sources[0] == "expressions"){
+      //Set state equal to new expressions state, which handles its own stuff too
+      return;
+    }
+    if(sources[0] == "grammars"){
+      //Set state equal to new expressions state, which handles its own stuff too
+      return;
+    }
+    if(sources[0] == "markup"){
       //Set state equal to new expressions state, which handles its own stuff too
       return;
     }
@@ -50,6 +58,16 @@ Blackboard.prototype.initializePage = function(){
   });
   $("#expressions").on('click', function(){
     document.location.hash = "expressions";
+    $container.empty();
+    //Set state equal to new expressions state, which handles its own stuff too
+  });
+  $("#grammars").on('click', function(){
+    document.location.hash = "grammars";
+    $container.empty();
+    //Set state equal to new expressions state, which handles its own stuff too
+  });
+  $("#expressions").on('click', function(){
+    document.location.hash = "markup";
     $container.empty();
     //Set state equal to new expressions state, which handles its own stuff too
   });
@@ -90,19 +108,36 @@ Blackboard.prototype.setTimer = function(){
 //The very first thing that is seen when entering a blackboard page, given no legible hashcode
 Blackboard.prototype.frontHTML = "<center><h1>What type of asset do you want to create?</h1></center><hr>"
                                   +"<div class='row'>"
-                                    +"<div class='col-md-6'>"
+                                    +"<div class='col-md-12'>"
                                       +"<center>"
                                         +"<h3>Dialogue</h3>"
-                                        +"<button class='btn btn-default my-btn' style='width: 50%; height: 150px;' id='dialogue'>Temporary button</button>"
-                                        +"<p style='width: 50%; margin: 20px; font-size: 16px;'>Grammars and expansions of what characters say</p>"
+                                        +"<button class='btn btn-default my-btn' style='width: 50%; height: 300px;' id='dialogue'>Temporary button</button>"
+                                        +"<p style='width: 50%; margin: 20px; font-size: 16px;'>What do your characters say?</p>"
                                       +"</center>"
                                     +"</div>"
-                                    +"<div class='col-md-6'>"
+                                  +"</div>"
+                                  +"<div class='row'>"
+                                    +"<div class='col-md-4'>"
                                       +"<center>"
-                                        +"<h3>Expressions</h3>"
+                                        +"<h3>Grammars</h3>"
+                                        +"<button class='btn btn-default my-btn' style='width: 50%; height: 150px;' id='grammars'>Temporary button</button>"
+                                        +"<p style='width: 50%; margin: 20px; font-size: 16px;'>Parts of dialogue</p>"
+                                      +"</center>"
+                                    +"</div>"
+                                    +"<div class='col-md-4'>"
+                                      +"<center>"
+                                        +"<h3>State Expressions</h3>"
                                         +"<button class='btn btn-default my-btn' style='width: 50%; height: 150px;' id='expressions'>Temporary button</button>"
                                         +"<p style='width: 50%; margin: 20px; font-size: 16px;'>Connection to your game logic</p>"
                                       +"</center>"
+                                    +"</div>"
+                                    +"<div class='col-md-4'>"
+                                      +"<center>"
+                                        +"<h3>Markup</h3>"
+                                        +"<button class='btn btn-default my-btn' style='width: 50%; height: 150px;' id='markup'>Temporary button</button>"
+                                        +"<p style='width: 50%; margin: 20px; font-size: 16px;'>Custom annotations</p>"
+                                      +"</center>"
+                                    +"</div>"
                                   +"</div>";
 
 
@@ -197,6 +232,9 @@ Blackboard.prototype.initializeListeners = function(){
 Blackboard.prototype.update = function(){
   //Check if there's a particular board state
   if(this.state != undefined){
+    //Call the state update function
+    this.state.update();
+
     //Next check if the timer has gone below 0
     if(this.timer <= 0){
       //Set the timer back up (if no internet, update every 5 seconds to look for a connection)
@@ -204,7 +242,7 @@ Blackboard.prototype.update = function(){
       else this.timer = this.timerMax;
 
       //Check the internet connection, and toggle the 'disabled' variable based on state of internet connection
-      //this.updateInternet();
+      this.updateInternet();
 
       //Next, check if the new stack is empty
       if(this.state.newStack.length > 0){
