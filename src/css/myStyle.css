@@ -87,3 +87,7 @@ h3{
   border-width: 2px;
   min-height: 35px;
 }
+
+a[disabled]{
+  pointer-events: none;
+}

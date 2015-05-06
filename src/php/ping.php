@@ -2,9 +2,9 @@
    ini_set('display_errors', '1');
    ini_set('error_reporting', E_ALL);
 
-   $serverName = "interactive-dialogue-editor.chuoohddppdq.us-west-2.rds.amazonaws.com"; //change this
-   $database = "InteractiveDialogueDB";
-   $port = 3306; //change this
+   $serverName = "ec2-52-24-177-233.us-west-2.compute.amazonaws.com";
+   $database = "InteractiveDialogueEditor";
+   $port = 3306;
 
    // Get UID and PWD from application-specific files.
    $uid = file_get_contents('../../../uid.txt');
@@ -14,18 +14,18 @@
 
    try {
       // $conn = new PDO( "sqlsrv:server=$serverName,$port;Database = $database", $uid, $pwd);
-      $conn = new PDO( "dblib:host=$serverName;dbname=$database", $uid, $pwd);
+      $conn = new PDO( "mysql:host=$serverName;port=$port;dbname=$database", $uid, $pwd);
       $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
    }
    catch( PDOException $e ) {
-      print_r($e);
-      die( "Error connecting to Interactive Dialogue MySQL Server" );
+      //print_r($e);
+      die( "Error" );
    }
 
    // Free statement and connection resources.
    $stmt = null;
    $conn = null;
 
-    print "Sucess!"
+   echo "Success";
 
 ?>
