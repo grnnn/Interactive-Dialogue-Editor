@@ -104,7 +104,7 @@ DialogueBoard.prototype.modalHTML = "<div class='modal fade' id='titleModal'>"
                                     +"</div>";
 
 //HTML for the button that adds fields
-DialogueBoard.prototype.addFieldHTML = "<button id='addField' class='btn btn-lg btn-default'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span> Add a Line</button>"
+DialogueBoard.prototype.addFieldHTML = "<div id='lineContainer'></div><button id='addField' class='btn btn-lg btn-default'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span> Add a Line</button>"
 
 //HTML for every field that is added
 DialogueBoard.prototype.fieldHTML = "<div class='panel panel-default'>"
@@ -176,12 +176,16 @@ DialogueBoard.prototype.initialize = function(){
   //
   this.$container.append(this.addFieldHTML);
   $("#addField").on("click", function(){
-    that.$container.prepend("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
     that.lineCount++;
+    $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
     var change = new Change();
     change.remove = function(){
       $("#line" + that.lineCount).remove();
       that.lineCount--;
+    };
+    change.reload = function(){
+      that.lineCount++;
+      $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
     };
     that.newStack.push(change);
   });

@@ -7,9 +7,17 @@
 var Change = function(){
   //Reference to the next change, so that I can check if it's possible to redo
   this.nextChange;
+
+  //If this change has been removed
+  this.removed = false;
 }
 
 //Shell function for when the change has been removed
 Change.prototype.remove = function(){
+  console.log("If you're reading this, something broke.");
+}
+
+//Shell function for when the change has been reloaded
+Change.prototype.reload = function(){
   console.log("If you're reading this, something broke.");
 }

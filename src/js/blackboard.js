@@ -16,6 +16,9 @@ var Blackboard = function(){
   //Called to read in hash stuff for page to figure out
   this.initializePage();
   //this.setTimer();
+
+  //The bottom most change in the stack, needs to be referenced by something in order to push it back on
+  this.bottomChange;
 }
 
 Blackboard.prototype.initializePage = function(){
@@ -27,7 +30,7 @@ Blackboard.prototype.initializePage = function(){
       this.$container.empty();
       this.$header.empty();
       this.state = new DialogueBoard(sources[1]);
-      that.initializeListeners();
+      this.initializeListeners();
       return;
     }
     if(sources[0] == "expressions"){
@@ -176,6 +179,85 @@ Blackboard.prototype.updateInternet = function(){
 
 }
 
+//Save function
+Blackboard.prototype.save = function(){
+  //anonymous function to recursively delete changes
+  function anonymousChangeDelete(change){
+    if(change.nextChange.removed){ //If the change is in the removedStack
+      if(change.nextChange !== undefined){
+        anonymousChangeDelete(change.nextChange);
+      }
+      //garbage collect useless changes
+      change.nextChange = null;
+    }
+  }
+
+  //If we've even made changes
+  if(this.state.newStack.length > 0){
+    //Now we save the info to the SQL server
+    this.state.save();
+
+    //Update the stacks properly
+    //Record the pointers to the next changes
+    if(this.state.changeStack.length > 0) this.state.changeStack[this.state.changeStack.length - 1].nextChange = this.state.newStack[0];
+    for(var i = 0; i < this.state.newStack.length; i++){
+      if(i !== this.state.newStack.length - 1){
+        this.state.newStack[i].nextChange = this.state.newStack[i+1];
+      }
+    }
+    //Merge the two stacks and clear the new one
+    Array.prototype.push.apply(this.state.changeStack, this.state.newStack);
+    this.state.newStack = [];
+    while(this.state.changeStack.length > 50){
+      anonymousChangeDelete(this.state.changeStack[0].nextChange); //Recursively delete useless changes
+      this.state.changeStack.shift(); //Pop the bottom off the stack until 20 states are reached
+    }
+  }
+};
+
+//Undo function
+Blackboard.prototype.undo = function(){
+  //Handle the stacks
+  this.save();
+
+  //pop the last change, push into removedStack
+  if(this.state.changeStack.length > 0){
+    var change = this.state.changeStack.pop();
+    change.remove();
+    change.removed = true;
+    this.state.removedStack.push(change);
+
+    //Disable Undo button if necesary, also make popped off change the bottom most, 'redo'-able
+    if(this.state.changeStack.length === 0){
+      $("#undoListener").attr("disabled", "disabled");
+      this.bottomChange = change;
+    }
+  }
+
+};
+
+//Redo function
+Blackboard.prototype.redo = function(){
+  //Handle teh stacks
+  this.save();
+
+  //Pop the last removed change, push into the proper change stack, reload
+  if(this.state.removedStack.length > 0){
+    var change = this.state.removedStack.pop();
+    change.reload();
+    change.removed = true;
+    this.state.newStack.push(change);
+
+    //Disable Redo button if necesary
+    if(this.state.newStack[this.state.newStack.length-1].nextChange === undefined){
+      $("#redoListener").attr("disabled", "disabled");
+    }
+  }
+
+  //One more for good measure
+  this.save();
+}
+
 //When a boardState is given, initialize what some listeners do
 Blackboard.prototype.initializeListeners = function(){
   var that = this;
@@ -183,52 +265,17 @@ Blackboard.prototype.initializeListeners = function(){
   $("#undoListener").attr("disabled", "disabled");
   $("#redoListener").attr("disabled", "disabled");
 
+  //Manual button listeners (put in place by all board states)
   $("#undoListener").on("click", function(){
-    //Check if the button is disabled
-    if($(this).is("[disabled]")){
-      event.preventDeafault();
-    }
-
-    //Handle the stacks
-    $("#saveListener").trigger("click");
-
-    //pop the last change, push into removedStack
-    if(that.state.changeStack.length > 0){
-      var change = that.state.changeStack.pop();
-      change.remove();
-      that.state.removedStack(change);
-    }
-
-    //Disable Undo button if necesary
-    if(that.state.changeStack.length === 0){
-      $(this).attr("disabled", "disabled");
-    } else{
-      $(this).removeAttr("disabled");
-    }
-
+    that.undo();
   });
 
-  //Manual button listeners (put in place by all board states)
-  $("#saveListener").on("click", function(){
-    if(that.state.newStack.length > 0){
-      //Now we save the info to the SQL server
-      that.state.save();
+  $("#redoListener").on("click", function(){
+    that.redo();
+  });
 
-      //Update the stacks properly
-      //Record the pointers to the next changes
-      if(that.state.changeStack.length > 0) that.state.changeStack[that.state.changeStack.length - 1].nextChange = that.state.newStack[0];
-      for(var i = 0; i < that.state.newStack.length; i++){
-        if(i !== that.state.newStack.length){
-          that.state.newStack[i].nextChange = that.state.newStack[i+1];
-        }
-      }
-      //Merge the two stacks and clear the new one
-      that.state.changeStack = Array.prototype.push.apply(that.state.changeStack, that.state.newStack);
-      that.state.newStack = [];
-      while(that.state.changeStack.length > 20){
-        that.state.changeStack.shift(); //Pop the bottom off the stack until 20 states are reached
-      }
-    }
+  $("#saveListener").on("click", function(){
+    that.save();
   });
 
   //Ctrl key listeners
@@ -237,15 +284,22 @@ Blackboard.prototype.initializeListeners = function(){
       switch(String.fromCharCode(event.which).toLowerCase()){
         //Save event
         case 's':
-          $("#saveListener").trigger("click");
+          that.save();
           event.preventDefault();
           break;
         //Undo event
         case 'z':
+          if(that.state.changeStack.length !== 0 || that.state.newStack.length !== 0){
+            that.undo();
+          }
           event.preventDefault();
           break;
         //Redo event
         case 'y':
+          if(that.state.changeStack.length > 0 && that.state.changeStack[that.state.changeStack.length - 1].nextChange === that.state.removedStack[that.state.removedStack.length - 1]
+            || that.state.changeStack.length === 0 && that.state.newStack.length === 0 && that.bottomChange !== undefined && that.bottomChange === that.state.removedStack[that.state.removedStack.length - 1]){
+            that.redo();
+          }
           event.preventDefault();
           break;
       }
@@ -259,10 +313,34 @@ Blackboard.prototype.initializeListeners = function(){
 
   //Last but not least, on a page previous event, check the hash to see if it's empty or only contains 'dialogue' or 'expressions'
   //If so, call save, set state to undefined, and push frontHTML back in
-}
+};
 
 Blackboard.prototype.updateButtons = function(){
+  //Check on save button
+  if(this.state.newStack.length === 0){
+    $("#saveListener").attr("disabled", "disabled");
+  } else {
+    $("#saveListener").removeAttr("disabled");
+  }
 
+  //Check on undo button
+  if(this.state.changeStack.length === 0 && this.state.newStack.length === 0){
+    $("#undoListener").attr("disabled", "disabled");
+  } else {
+    $("#undoListener").removeAttr("disabled");
+  }
+
+  //Check on redo button
+  if(this.state.changeStack.length > 0 && this.state.changeStack[this.state.changeStack.length - 1].nextChange === this.state.removedStack[this.state.removedStack.length - 1]){
+    $("#redoListener").removeAttr("disabled");
+  } else if(this.state.changeStack.length === 0 && this.state.newStack.length === 0 && this.bottomChange !== undefined && this.bottomChange === this.state.removedStack[this.state.removedStack.length - 1]){
+    $("#redoListener").removeAttr("disabled");
+  } else{
+    $("#redoListener").attr("disabled", "disabled");
+  }
+  if(this.state.newStack.length > 1){
+    $("#redoListener").attr("disabled", "disabled");
+  }
 };
 
 //Runs every 100ms and does a few things to manage the changeStack, the save functionality, and the potential lack of internet connection
@@ -285,7 +363,7 @@ Blackboard.prototype.update = function(){
       this.updateInternet();
 
       //Save the current info
-      $("#saveListener").trigger("click");
+      this.save();
 
     }
   }

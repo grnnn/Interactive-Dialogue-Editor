@@ -90,4 +90,6 @@ h3{
 
 a[disabled]{
   pointer-events: none;
+  cursor: normal;
+  opacity: 0.6;
 }

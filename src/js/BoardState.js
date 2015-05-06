@@ -37,5 +37,5 @@ BoardState.prototype.initializePage = function(){
 
 //Function which is called every 10 seconds
 BoardState.prototype.update = function(){
-  console.log("Updating...");
+  //console.log("Updating...");
 };
