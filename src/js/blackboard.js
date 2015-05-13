@@ -61,17 +61,17 @@ Blackboard.prototype.initializePage = function(){
   });
   $("#expressions").on('click', function(){
     document.location.hash = "expressions";
-    $container.empty();
+    that.$container.empty();
     //Set state equal to new expressions state, which handles its own stuff too
   });
   $("#grammars").on('click', function(){
     document.location.hash = "grammars";
-    $container.empty();
+    that.$container.empty();
     //Set state equal to new expressions state, which handles its own stuff too
   });
   $("#expressions").on('click', function(){
     document.location.hash = "markup";
-    $container.empty();
+    that.$container.empty();
     //Set state equal to new expressions state, which handles its own stuff too
   });
 };

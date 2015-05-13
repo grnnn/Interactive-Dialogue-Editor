@@ -18,6 +18,13 @@ var DialogueBoard = function(id){
 
   //Keep track of the number of lines we have
   this.lineCount = 0;
+  this.lineMax = 0;
+
+  //Keep track of length of user linesOfDialogue
+  this.lineLengths = [];
+
+  //Keep track of timer for keypress input
+  this.keypressTimer = 0;
 };
 
 //More inheritance of BoardState
@@ -40,7 +47,17 @@ DialogueBoard.prototype.getID = function(){
   this.info.id = 1;
   this.info.title = "Untitled Dialogue";
   document.location.hash += "/" + this.info.id;
-}
+};
+
+//Overload save function
+DialogueBoard.prototype.save = function(){
+  console.log("saving...");
+
+
+  //Handle unresolved stacks
+  this.keypressTimer = 2;
+  this.update();
+};
 
 //This is the header HTML we need
 DialogueBoard.prototype.headerHTML = "<div class='navbar-header'>"
@@ -114,20 +131,38 @@ DialogueBoard.prototype.fieldHTML = "<div class='panel panel-default'>"
                                             +"<div class='text'>Line</div>"
                                           +"</div>"
                                           +"<div class='col-md-4'>"
-                                            +"<div class='text'>Annotations Here!</div>"
+                                            +"<div class='text'>Annotations</div>"
                                           +"</div>"
                                         +"</div>"
                                         +"<div class='row'>"
                                           +"<div class='col-md-8'>"
                                             +"<div>"
-                                              +"<textarea rows='2' cols='72' style='resize:vertical;width:100%;' id='TextArea1'>Enter Dialogue here</textarea>"
+                                              +"<textarea rows='2' cols='72' style='resize:vertical;width:100%;' class='dialogue' placeholder='Enter Dialogue here'></textarea>"
                                             +"</div>"
-                                            +"<div class='text'> Grammars Here </div>"
+                                            +"<div class='text'> Grammars </div>"
                                           +"</div>"
-                                        +"</div"
+                                          +"<div class='col-md-4 dAnnotations'></div>"
+                                        +"</div>"
+                                        +"<div class='row'>"
+                                          +"<div class='col-md-8 grammars'>"
+                                          +"</div>"
+                                          +"<div class='col-md-4 gAnnotations'>"
+                                          +"</div>"
+                                        +"</div>"
+                                        +"<button class='addGrammar btn btn-md btn-default'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span> Add a Grammar</button>"
                                       +"</div>"
                                     +"</div>";
 
+//HTML for every grammar that is added
+DialogueBoard.prototype.grammarHTML = "<div class='panel panel-default' style='margin-left:10%;'>"
+                                        +"<div class='panel-body'>"
+                                         +"<span class='subtext'>[[Untitled Grammar]]</span>"
+                                         +"<span class='gFields'>"
+                                          +"<input type='text' style='margin-left:10px;'></input>"
+                                         +"</span>"
+                                         +"<button class='addGrammarField btn btn-sm btn-default' style='font-size:10px; margin-left: 10px;'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span></button>";
+                                        +"</div>"
+                                      +"</div>"
 
 //This call pushes in starting HTML and initializes the listeners
 DialogueBoard.prototype.initialize = function(){
@@ -172,22 +207,137 @@ DialogueBoard.prototype.initialize = function(){
   $(".title-modal-close").on("click", cancelNewTitle);
 
   //
+  //KeyPress Listener function
+  //
+  function myKeyPress(e){
+    //On start typing new keys
+    var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+    if (charCode) {
+      that.keypressTimer = 8;
+
+      //When an area is highlighted and a key pressed, a change has been made in that the user has deleted some dialogue via highlight
+      var ta = $(this).get()[0];
+      if(ta.selectionStart !== ta.selectionEnd){
+        var lineNum = parseInt($(this).parent().parent().parent().parent().parent().parent().attr("id").replace("line", "")) - 1;
+        var change = new Change();
+        change.text = $(this).val().substring(ta.selectionStart, ta.selectionEnd);
+        change.index = ta.selectionStart;
+        that.lineLengths[lineNum] -= (ta.selectionEnd - ta.selectionStart + 1);
+        change.remove = function(){
+          var str = $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
+          if(str !== undefined){
+            str = str.substring(0, this.index) + this.text + str.substring(this.index+1, str.length);
+            this.valRemoved = str.substring(this.index, this.index+1);
+            $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(str);
+          }
+        };
+        change.reload = function(){
+          var str = $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
+          if(str !== undefined){
+            str = str.substring(0, this.index) + this.valRemoved + str.substring(this.index+1+this.text.length-1, str.length);
+            $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(str);
+          }
+        };
+        //that.newStack.push(change);
+      }
+    }
+  };
+
+  //
+  //STUFF FOR GRAMMAR FIELDS
+  //
+  function grammarAdd(){
+    var lineNum = parseInt($(this).parent().parent().parent().attr("id").replace("line", ""));
+    $("#line"+lineNum+" div.panel div.panel-body div.row div.grammars").append(that.grammarHTML);
+
+    
+  };
+
+  //
   //All this stuff handles every field of the exchange
   //
   this.$container.append(this.addFieldHTML);
   $("#addField").on("click", function(){
     that.lineCount++;
+    that.lineMax++;
     $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
+    that.lineLengths.push(0);
     var change = new Change();
+    change.lineNum = that.lineCount;
     change.remove = function(){
       $("#line" + that.lineCount).remove();
       that.lineCount--;
+
+      //Take care of dialogue field
+      this.oldLineCount = that.lineLengths[this.lineNum-1];
+      this.lineContent = $("div#line"+this.lineCount+" div div.panel div.panel-body div.row div div textarea.dialogue").val();
     };
     change.reload = function(){
       that.lineCount++;
       $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
+
+      //Take care of dialogue field
+      $("div#line"+this.lineCount+" div div.panel div.panel-body div.row div div textarea.dialogue").val(this.lineContent);
+      //make new listeners for keypress
+      $("#lineContainer div div.panel div.panel-body div.row div div textarea.dialogue").on("keypress", myKeyPress);
+
     };
     that.newStack.push(change);
+
+    //make new listeners for keypress
+    $("#lineContainer div div.panel div.panel-body div.row div div textarea.dialogue").on("keypress", myKeyPress);
+
+    //Listener for adding a grammar field
+    $("#lineContainer div div.panel div.panel-body button.addGrammar").on("click", grammarAdd);
+
   });
-  //Add Listeners here Max!
+
+
+
+
+
+
+
+
+};
+
+//Add listeners depending on changes in the dialogue content
+DialogueBoard.prototype.update = function(){
+  var that = this;
+
+  //Compile changes from last group of keyboard presses
+  if(this.keypressTimer > 0) this.keypressTimer--;
+  if(this.keypressTimer === 1){
+    var change = new Change();
+    change.keyChanges = [];
+    change.text = [];
+    for(var i = 0; i < this.lineMax; i++){
+      change.keyChanges.push(0);
+      change.text.push("");
+      var str = $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
+      if(str.length >= this.lineLengths[i]){
+        change.keyChanges[i] = str.length-1 - this.lineLengths[i];
+        change.text[i] = str.substring(this.lineLengths[i], str.length-1);
+        this.lineLengths[i] = str.length-1;
+      }
+    }
+    change.remove = function(){
+      for(var i = 0; i < this.keyChanges.length; i++){
+        var oldStr = $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
+        if(oldStr == undefined) continue;
+        $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(oldStr.substring(0, oldStr.length-this.keyChanges[i]));
+        that.lineLengths[i] = oldStr.length-1-this.keyChanges[i];
+        console.log(this.text);
+      }
+    };
+    change.reload = function(){
+      for(var i = 0; i < this.keyChanges.length; i++){
+        var oldStr = $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
+        if(oldStr == undefined) continue;
+        $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(oldStr + this.text[i]);
+        that.lineLengths[i] = oldStr.length-1 + this.keyChanges[i];
+      }
+    };
+    this.newStack.push(change);
+  }
 }
