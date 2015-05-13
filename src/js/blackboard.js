@@ -35,14 +35,26 @@ Blackboard.prototype.initializePage = function(){
     }
     if(sources[0] == "expressions"){
       //Set state equal to new expressions state, which handles its own stuff too
+      this.$container.empty();
+      this.$header.empty();
+      this.state = new ExpressionBoard(sources[1]);
+      this.initializeListeners();
       return;
     }
     if(sources[0] == "grammars"){
       //Set state equal to new expressions state, which handles its own stuff too
+      this.$container.empty();
+      this.$header.empty();
+      this.state = new GrammarBoard(sources[1]);
+      this.initializeListeners();
       return;
     }
     if(sources[0] == "markup"){
       //Set state equal to new expressions state, which handles its own stuff too
+      this.$container.empty();
+      this.$header.empty();
+      this.state = new MarkupBoard(sources[1]);
+      this.initializeListeners();
       return;
     }
     //At this point, assume the hash value is garbage and set it to blank
@@ -62,16 +74,25 @@ Blackboard.prototype.initializePage = function(){
   $("#expressions").on('click', function(){
     document.location.hash = "expressions";
     that.$container.empty();
+    that.$header.empty();
+    that.state = new ExpressionBoard();
+    that.initializeListeners();
     //Set state equal to new expressions state, which handles its own stuff too
   });
   $("#grammars").on('click', function(){
     document.location.hash = "grammars";
     that.$container.empty();
+    that.$header.empty();
+    that.state = new GrammarBoard();
+    that.initializeListeners();
     //Set state equal to new expressions state, which handles its own stuff too
   });
-  $("#expressions").on('click', function(){
+  $("#markup").on('click', function(){
     document.location.hash = "markup";
     that.$container.empty();
+    that.$header.empty();
+    that.state = new MarkupBoard();
+    that.initializeListeners();
     //Set state equal to new expressions state, which handles its own stuff too
   });
 };
@@ -360,7 +381,7 @@ Blackboard.prototype.update = function(){
       else this.timer = this.timerMax;
 
       //Check the internet connection, and toggle the 'disabled' variable based on state of internet connection
-      this.updateInternet();
+      //this.updateInternet();
 
       //Save the current info
       this.save();

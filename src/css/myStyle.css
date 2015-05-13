@@ -58,6 +58,15 @@ h3{
   position: relative;
   cursor: pointer;
 }
+#myTitle2{
+  font-weight: bold;
+  font-size: 32px;
+  color: white;
+  margin: 15px;
+  display: block;
+  position: relative;
+}
+
 
 #myTitle:hover{
   background-color: #FFA500;
