@@ -1,19 +1,18 @@
 //A simple interface for our 2 types of board states
 var BoardState = function(){
-  //Our stack of state changes, for ctrl-z purposes
+  //Our stack of board states
   this.changeStack = [];
 
-  //Another stack of state changes, if this isn't empty, that's a signal to save to the SQL server
-  this.newStack = [];
-
-  //A stack of removed state changes, for Ctrl-y purposes, associated with certain top-level states
-  this.removedStack = [];
-
-  //Top level object tracking changes
-  this.info = {};
+  //Save another stack of state changes in case players want to redo after some undos
+  this.redoStack = [];
 
   //Indicates what type of boardstate this is
   this.type = "";
+
+  //Can we do a redo?
+  this.canRedo = false;
+  //Have we changed since we last did things?
+  this.changed = false;
 
   //Finally, we need the HTML container to do push in our web page stuff
   this.$container = $("#myContainer");
@@ -38,4 +37,14 @@ BoardState.prototype.initializePage = function(){
 //Function which is called every 10 seconds
 BoardState.prototype.update = function(){
   //console.log("Updating...");
+};
+
+//This parses out a board state into HTML
+BoardState.prototype.parse = function(){
+  console.log("Parsing...");
+};
+
+//This compresses a bunch of HTML into a board state
+BoardState.prototype.compress = function(){
+  console.log("Compressing...");
 };

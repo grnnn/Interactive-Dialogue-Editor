@@ -25,6 +25,9 @@ var DialogueBoard = function(id){
 
   //Keep track of timer for keypress input
   this.keypressTimer = 0;
+
+  //Make sure to store the written lines of dialogue
+  this.info.lines = [];
 };
 
 //More inheritance of BoardState
@@ -55,7 +58,7 @@ DialogueBoard.prototype.save = function(){
 
 
   //Handle unresolved stacks
-  this.keypressTimer = 2;
+  if(this.keypressTimer > 2) this.keypressTimer = 2;
   this.update();
 };
 
@@ -214,32 +217,6 @@ DialogueBoard.prototype.initialize = function(){
     var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
     if (charCode) {
       that.keypressTimer = 8;
-
-      //When an area is highlighted and a key pressed, a change has been made in that the user has deleted some dialogue via highlight
-      var ta = $(this).get()[0];
-      if(ta.selectionStart !== ta.selectionEnd){
-        var lineNum = parseInt($(this).parent().parent().parent().parent().parent().parent().attr("id").replace("line", "")) - 1;
-        var change = new Change();
-        change.text = $(this).val().substring(ta.selectionStart, ta.selectionEnd);
-        change.index = ta.selectionStart;
-        that.lineLengths[lineNum] -= (ta.selectionEnd - ta.selectionStart + 1);
-        change.remove = function(){
-          var str = $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
-          if(str !== undefined){
-            str = str.substring(0, this.index) + this.text + str.substring(this.index+1, str.length);
-            this.valRemoved = str.substring(this.index, this.index+1);
-            $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(str);
-          }
-        };
-        change.reload = function(){
-          var str = $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
-          if(str !== undefined){
-            str = str.substring(0, this.index) + this.valRemoved + str.substring(this.index+1+this.text.length-1, str.length);
-            $("#line"+(lineNum+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(str);
-          }
-        };
-        //that.newStack.push(change);
-      }
     }
   };
 
@@ -250,7 +227,7 @@ DialogueBoard.prototype.initialize = function(){
     var lineNum = parseInt($(this).parent().parent().parent().attr("id").replace("line", ""));
     $("#line"+lineNum+" div.panel div.panel-body div.row div.grammars").append(that.grammarHTML);
 
-    
+
   };
 
   //
@@ -308,36 +285,11 @@ DialogueBoard.prototype.update = function(){
   //Compile changes from last group of keyboard presses
   if(this.keypressTimer > 0) this.keypressTimer--;
   if(this.keypressTimer === 1){
+    //Put any dialogue change on the change stack
     var change = new Change();
-    change.keyChanges = [];
-    change.text = [];
+    change.oldLines = this.info.lines;
     for(var i = 0; i < this.lineMax; i++){
-      change.keyChanges.push(0);
-      change.text.push("");
-      var str = $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
-      if(str.length >= this.lineLengths[i]){
-        change.keyChanges[i] = str.length-1 - this.lineLengths[i];
-        change.text[i] = str.substring(this.lineLengths[i], str.length-1);
-        this.lineLengths[i] = str.length-1;
-      }
+
     }
-    change.remove = function(){
-      for(var i = 0; i < this.keyChanges.length; i++){
-        var oldStr = $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
-        if(oldStr == undefined) continue;
-        $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(oldStr.substring(0, oldStr.length-this.keyChanges[i]));
-        that.lineLengths[i] = oldStr.length-1-this.keyChanges[i];
-        console.log(this.text);
-      }
-    };
-    change.reload = function(){
-      for(var i = 0; i < this.keyChanges.length; i++){
-        var oldStr = $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
-        if(oldStr == undefined) continue;
-        $("#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val(oldStr + this.text[i]);
-        that.lineLengths[i] = oldStr.length-1 + this.keyChanges[i];
-      }
-    };
-    this.newStack.push(change);
   }
 }

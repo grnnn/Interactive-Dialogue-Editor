@@ -16,9 +16,6 @@ var Blackboard = function(){
   //Called to read in hash stuff for page to figure out
   this.initializePage();
   //this.setTimer();
-
-  //The bottom most change in the stack, needs to be referenced by something in order to push it back on
-  this.bottomChange;
 }
 
 Blackboard.prototype.initializePage = function(){
@@ -202,82 +199,32 @@ Blackboard.prototype.updateInternet = function(){
 
 //Save function
 Blackboard.prototype.save = function(){
-  //anonymous function to recursively delete changes
-  function anonymousChangeDelete(change){
-    if(change.nextChange.removed){ //If the change is in the removedStack
-      if(change.nextChange !== undefined){
-        anonymousChangeDelete(change.nextChange);
-      }
-      //garbage collect useless changes
-      change.nextChange = null;
-    }
-  }
-
-  //If we've even made changes
-  if(this.state.newStack.length > 0){
-    //Now we save the info to the SQL server
+  if(this.state.changed){
     this.state.save();
-
-    //Update the stacks properly
-    //Record the pointers to the next changes
-    if(this.state.changeStack.length > 0) this.state.changeStack[this.state.changeStack.length - 1].nextChange = this.state.newStack[0];
-    for(var i = 0; i < this.state.newStack.length; i++){
-      if(i !== this.state.newStack.length - 1){
-        this.state.newStack[i].nextChange = this.state.newStack[i+1];
-      }
-    }
-    //Merge the two stacks and clear the new one
-    Array.prototype.push.apply(this.state.changeStack, this.state.newStack);
-    this.state.newStack = [];
-    while(this.state.changeStack.length > 50){
-      anonymousChangeDelete(this.state.changeStack[0].nextChange); //Recursively delete useless changes
-      this.state.changeStack.shift(); //Pop the bottom off the stack until 20 states are reached
-    }
+    this.state.changed = false;
   }
 };
 
 //Undo function
 Blackboard.prototype.undo = function(){
-  //Handle the stacks
-  this.save();
+  if(this.state.changed) this.save();
 
-  //pop the last change, push into removedStack
-  if(this.state.changeStack.length > 0){
-    var change = this.state.changeStack.pop();
-    change.remove();
-    change.removed = true;
-    this.state.removedStack.push(change);
+  //Pop top level change into redoStack
+  this.state.redoStack.push(this.state.changeStack.pop());
+  this.state.canRedo = true;
 
-    //Disable Undo button if necesary, also make popped off change the bottom most, 'redo'-able
-    if(this.state.changeStack.length === 0){
-      $("#undoListener").attr("disabled", "disabled");
-      this.bottomChange = change;
-    }
-  }
-
+  //Parse out the new top change into the board
+  this.state.parse();
 };
 
 //Redo function
 Blackboard.prototype.redo = function(){
-  //Handle teh stacks
-  this.save();
+  //Pop top level redo into changeStack
+  this.state.changeStack.push(this.state.redoStack.pop());
 
-  //Pop the last removed change, push into the proper change stack, reload
-  if(this.state.removedStack.length > 0){
-    var change = this.state.removedStack.pop();
-    change.reload();
-    change.removed = true;
-    this.state.newStack.push(change);
-
-    //Disable Redo button if necesary
-    if(this.state.newStack[this.state.newStack.length-1].nextChange === undefined){
-      $("#redoListener").attr("disabled", "disabled");
-    }
-  }
-
-  //One more for good measure
-  this.save();
-}
+  //Parse out the new top level change into the board
+  this.state.parse();
+};
 
 //When a boardState is given, initialize what some listeners do
 Blackboard.prototype.initializeListeners = function(){
@@ -372,7 +319,7 @@ Blackboard.prototype.update = function(){
     this.state.update();
 
     //Keep track of our undo, redo, and save buttons
-    this.updateButtons();
+    //this.updateButtons();
 
     //Next check if the timer has gone below 0
     if(this.timer <= 0){
