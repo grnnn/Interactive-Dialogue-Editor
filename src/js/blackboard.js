@@ -207,14 +207,15 @@ Blackboard.prototype.save = function(){
 
 //Undo function
 Blackboard.prototype.undo = function(){
-  if(this.state.changed) this.save();
-
   //Pop top level change into redoStack
   this.state.redoStack.push(this.state.changeStack.pop());
   this.state.canRedo = true;
 
   //Parse out the new top change into the board
   this.state.parse();
+
+  this.state.changed = true;
+  this.save();
 };
 
 //Redo function
@@ -224,6 +225,9 @@ Blackboard.prototype.redo = function(){
 
   //Parse out the new top level change into the board
   this.state.parse();
+
+  this.state.changed = true;
+  this.save();
 };
 
 //When a boardState is given, initialize what some listeners do
@@ -264,8 +268,7 @@ Blackboard.prototype.initializeListeners = function(){
           break;
         //Redo event
         case 'y':
-          if(that.state.changeStack.length > 0 && that.state.changeStack[that.state.changeStack.length - 1].nextChange === that.state.removedStack[that.state.removedStack.length - 1]
-            || that.state.changeStack.length === 0 && that.state.newStack.length === 0 && that.bottomChange !== undefined && that.bottomChange === that.state.removedStack[that.state.removedStack.length - 1]){
+          if(that.state.canRedo){
             that.redo();
           }
           event.preventDefault();
