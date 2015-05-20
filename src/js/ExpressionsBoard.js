@@ -110,11 +110,32 @@ ExpressionBoard.prototype.fieldHTML = "<div class='panel panel-default'>"
                                       +"<div class='panel-body'>"
                                         +"<div class='row'>"
                                           +"<div class='col-md-8'>"
-                                            +"<div class='text'>Expressions Here!</div>"
+                                            +"<div class='text'><span class='text'>State Name </span>"
+                                                +"<span><input type='text' class='form-control' style=' display: inline; width: 40%; font-weight: normal; margin-bottom: 12px;'></input></span>"
+                                            +"</div>"
                                           +"</div>"
                                         +"</div>"
+                                        
+                                          
+                                            
+                                            //+"</div>"
+                                              +"<div class='dropdown' style='margin-bottom: 10px'>"
+                                                +"<span class='text'>Type: </span>"
+                                                +"<button class='btn btn-default dropdown-toggle' type='button' id='menu1' data-toggle='dropdown'>None"
+                                                  +"<span class='caret'></span></button>"
+                                                +"<ul class='dropdown-menu' role='menu' aria-labelledby='menu1'>"
+                                                  +"<li role='presentation'><a role='menuitem' tabindex='-1' href='#''>Int</a></li>"
+                                                  +"<li role='presentation'><a role='menuitem' tabindex='-1' href='#''>Boolean</a></li>"
+                                                  +"<li role='presentation'><a role='menuitem' tabindex='-1' href='#''>String</a></li>"
+                                                  +"<li role='presentation'><a role='menuitem' tabindex='-1' href='#''>None</a></li>"
+                                                +"</ul>"
+                                              +"</div>"
+                                            +"</span>"
+                                          
+                                        
+                                       
                                       +"</div>"
-                                      +"</div>";
+                                    +"</div>";
 
 
 //This call pushes in starting HTML and initializes the listeners
@@ -162,10 +183,24 @@ ExpressionBoard.prototype.initialize = function(){
   //
   //All this stuff handles every field of the exchange
   //
-  this.$container.append(this.fieldHTML);
+  //this.$container.append(this.fieldHTML);
+  this.$container.append(this.addFieldHTML);
   $("#addField").on("click", function(){
     that.lineCount++;
     $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
+    $("#line"+that.lineCount+ " div.panel-default div.panel-body div.dropdown ul li a").on("click", function(){
+      $(this).parent().parent().parent().find("button").html($(this).text()+"<span class='caret'></span>");
+    });
+    $("#line"+that.lineCount+ " div.panel-default div.panel-body div.row div.col-md-8 div.text span input").on("blur", function(){
+      var temp = $(this).val();
+      $(this).parent().parent().parent().parent().parent().append("<button id='subButton"+that.lineCount+"' class='btn btn-default'>Add a SubState</button>");
+      $("#subButton"+that.lineCount).on("click", function(){
+        $(this).
+      })
+      $(this).parent().parent().html("<span class='text'>"+temp+"</span>");
+
+      
+    });
     var change = new Change();
     change.remove = function(){
       $("#line" + that.lineCount).remove();
