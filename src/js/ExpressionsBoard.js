@@ -29,17 +29,60 @@ ExpressionBoard.prototype.load = function(id){
   //If so, load info and create appro HTML
 
   //For now, just assume that it's id 1 and name is "My Dialogue"
-  this.info.id = 1;
-  this.info.title = "Expressions";
+  //this.info.id = 1;
+  //this.info.title = "Expressions";
 };
 
 //Function which obtains the next available ID, also will rename the dialogue to the appropriate form of "Untitled Dialogue (number)"
 //The difference between this function and load is that load() will get an existing exchange, while this will create a new one
 ExpressionBoard.prototype.getID = function(){
   //For now, just assume that it's id 1 and name is "My Dialogue"
-  this.info.id = 1;
-  this.info.title = "Expressions";
-  document.location.hash += "/" + this.info.id;
+  //this.info.id = 1;
+  //this.info.title = "Expressions";
+  //document.location.hash += "/" + this.info.id;
+  document.location.hash += "/" + 1;
+}
+ExpressionBoard.prototype.addSub = function(lineNum){
+  this.lineCount++;
+  console.log(this.fieldHTML);
+  var that = this;
+  var fieldHTML = this.fieldHTML(this.lineCount);
+  console.log($("#panel"+lineNum));
+  $("#panel"+lineNum).append("<div id='line" + this.lineCount +"' style='margin-left:20px;'>" + fieldHTML + "</div>");
+  $("#line"+ this.lineCount + " div.panel-default div.panel-body div.dropdown ul li a").on("click", function(){
+    $(this).parent().parent().parent().find("button").html($(this).text()+"<span class='caret'></span>");
+  });
+
+
+  var curr = that.lineCount;
+
+  $("#line"+ this.lineCount + " div.panel-default div.panel-body div.row div.col-md-8 div.text span input").on("blur", function(){
+      var temp = $(this).val();
+      var temp2 = $(this).val();
+      temp = temp.replace(/\s+/g, '');
+      if(!temp){}
+      else{
+        $(this).parent().parent().parent().parent().parent().append("<button id='subButton"+that.lineCount+"' class='btn btn-default'>Add a SubState</button>");
+        $("#subButton"+that.lineCount).on("click", function(){
+          that.addSub(curr);
+          //that.lineCount++;
+          //$(this).parent().append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
+          //$("#line"+that.lineCount+ " div.panel-default div.panel-body div.dropdown ul li a").on("click", function(){
+            //$(this).parent().parent().parent().find("button").html($(this).text()+"<span class='caret'></span>");
+          //});
+        });
+
+
+
+
+
+
+        $(this).parent().parent().html("<span class='text'>"+temp2+"</span>");
+      }
+
+      
+    });
+
 }
 
 //This is the header HTML we need
@@ -106,7 +149,8 @@ ExpressionBoard.prototype.modalHTML = "<div class='modal fade' id='titleModal'>"
 ExpressionBoard.prototype.addFieldHTML = "<div id='lineContainer'></div><button id='addField' class='btn btn-lg btn-default'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span> Add a Line</button>"
 
 //HTML for every field that is added
-ExpressionBoard.prototype.fieldHTML = "<div class='panel panel-default'>"
+ExpressionBoard.prototype.fieldHTML = function(lineNum){ 
+  var str = "<div id='panel"+lineNum+"' class='panel panel-default'>"
                                       +"<div class='panel-body'>"
                                         +"<div class='row'>"
                                           +"<div class='col-md-8'>"
@@ -131,11 +175,11 @@ ExpressionBoard.prototype.fieldHTML = "<div class='panel panel-default'>"
                                                 +"</ul>"
                                               +"</div>"
                                             +"</span>"
-                                          
-                                        
-                                       
                                       +"</div>"
                                     +"</div>";
+    return str;
+    }
+
 
 
 //This call pushes in starting HTML and initializes the listeners
@@ -148,8 +192,8 @@ ExpressionBoard.prototype.initialize = function(){
   //
   //All this stuff handles the Title of the exchange
   //
-  $("#titleModalField").attr("value", this.info.title);
-  $("#myTitle2").html(this.info.title);
+  $("#titleModalField").attr("value", "Expressions");
+  $("#myTitle2").html("Expressions");
   //$("#myTitle").on("click", function(){
     //$("#titleModal").modal({backdrop: 'static', keyboard: false});
   //});
@@ -187,17 +231,44 @@ ExpressionBoard.prototype.initialize = function(){
   this.$container.append(this.addFieldHTML);
   $("#addField").on("click", function(){
     that.lineCount++;
-    $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
+    var fieldHTML = that.fieldHTML(that.lineCount);
+    $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + fieldHTML + "</div>");
     $("#line"+that.lineCount+ " div.panel-default div.panel-body div.dropdown ul li a").on("click", function(){
       $(this).parent().parent().parent().find("button").html($(this).text()+"<span class='caret'></span>");
     });
+
+    var curr = that.lineCount;
+
     $("#line"+that.lineCount+ " div.panel-default div.panel-body div.row div.col-md-8 div.text span input").on("blur", function(){
       var temp = $(this).val();
-      $(this).parent().parent().parent().parent().parent().append("<button id='subButton"+that.lineCount+"' class='btn btn-default'>Add a SubState</button>");
-      $("#subButton"+that.lineCount).on("click", function(){
-        $(this).
-      })
-      $(this).parent().parent().html("<span class='text'>"+temp+"</span>");
+      var temp2 = $(this).val();
+      temp = temp.replace(/\s+/g, '');
+
+      if(!temp){}
+
+
+
+
+
+      else{
+        $(this).parent().parent().parent().parent().parent().append("<button id='subButton"+that.lineCount+"' class='btn btn-default'>Add a SubState</button>");
+        $("#subButton"+that.lineCount).on("click", function(){
+          var temp3 = that.lineCount;
+          that.addSub(curr);
+          //that.lineCount++;
+          //$(this).parent().append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
+          //$("#line"+that.lineCount+ " div.panel-default div.panel-body div.dropdown ul li a").on("click", function(){
+            //$(this).parent().parent().parent().find("button").html($(this).text()+"<span class='caret'></span>");
+          //});
+        });
+
+
+
+
+
+
+        $(this).parent().parent().html("<span class='text'>"+temp2+"</span>");
+      }
 
       
     });
