@@ -9,6 +9,9 @@ var BoardState = function(){
   //Indicates what type of boardstate this is
   this.type = "";
 
+  //This field indicates the unique ID of the asset (for dialogue, grammars, and markup)
+  this.id = 0;
+
   //Can we do a redo?
   this.canRedo = false;
   //Have we changed since we last did things?

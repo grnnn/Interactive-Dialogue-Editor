@@ -26,8 +26,6 @@ var DialogueBoard = function(id){
   //Keep track of timer for keypress input
   this.keypressTimer = 0;
 
-  //Make sure to store the written lines of dialogue
-  this.info.lines = [];
 };
 
 //More inheritance of BoardState
@@ -39,17 +37,17 @@ DialogueBoard.prototype.load = function(id){
   //If so, load info and create appro HTML
 
   //For now, just assume that it's id 1 and name is "My Dialogue"
-  this.info.id = 1;
-  this.info.title = "Untitled Dialogue";
+  this.id = 1;
+  this.title = "Untitled Dialogue";
 };
 
 //Function which obtains the next available ID, also will rename the dialogue to the appropriate form of "Untitled Dialogue (number)"
 //The difference between this function and load is that load() will get an existing exchange, while this will create a new one
 DialogueBoard.prototype.getID = function(){
   //For now, just assume that it's id 1 and name is "My Dialogue"
-  this.info.id = 1;
-  this.info.title = "Untitled Dialogue";
-  document.location.hash += "/" + this.info.id;
+  this.id = 1;
+  this.title = "Untitled Dialogue";
+  document.location.hash += "/" + this.id;
 };
 
 //Overload save function
@@ -177,22 +175,22 @@ DialogueBoard.prototype.initialize = function(){
   //
   //All this stuff handles the Title of the exchange
   //
-  $("#titleModalField").attr("value", this.info.title);
-  $("#myTitle").html(this.info.title);
+  $("#titleModalField").attr("value", this.title);
+  $("#myTitle").html(this.title);
   $("#myTitle").on("click", function(){
     $("#titleModal").modal({backdrop: 'static', keyboard: false});
   });
   function changeTitle(){
     if($("#titleModalField").val() === ""){
       $("#titleModal").modal("hide");
-      $("#titleModalField").attr("value", that.info.title);
-      $("#titleModalField").val(that.info.title);
+      $("#titleModalField").attr("value", that.title);
+      $("#titleModalField").val(that.title);
       return;
     }
-    that.info.title = $("#titleModalField").val();
-    $("#titleModalField").attr("value", that.info.title);
-    $("#titleModalField").val(that.info.title);
-    $("#myTitle").html(that.info.title);
+    that.title = $("#titleModalField").val();
+    $("#titleModalField").attr("value", that.title);
+    $("#titleModalField").val(that.title);
+    $("#myTitle").html(that.title);
     $("#titleModal").modal("hide");
   }
   $("#titleModalField").keyup(function (e) {
@@ -204,8 +202,8 @@ DialogueBoard.prototype.initialize = function(){
     changeTitle();
   });
   function cancelNewTitle(){
-    $("#titleModalField").attr("value", that.info.title);
-    $("#titleModalField").val(that.info.title);
+    $("#titleModalField").attr("value", that.title);
+    $("#titleModalField").val(that.title);
   }
   $(".title-modal-close").on("click", cancelNewTitle);
 
@@ -239,27 +237,7 @@ DialogueBoard.prototype.initialize = function(){
     that.lineMax++;
     $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
     that.lineLengths.push(0);
-    var change = new Change();
-    change.lineNum = that.lineCount;
-    change.remove = function(){
-      $("#line" + that.lineCount).remove();
-      that.lineCount--;
 
-      //Take care of dialogue field
-      this.oldLineCount = that.lineLengths[this.lineNum-1];
-      this.lineContent = $("div#line"+this.lineCount+" div div.panel div.panel-body div.row div div textarea.dialogue").val();
-    };
-    change.reload = function(){
-      that.lineCount++;
-      $("#lineContainer").append("<div id='line" + that.lineCount +"'>" + that.fieldHTML + "</div>");
-
-      //Take care of dialogue field
-      $("div#line"+this.lineCount+" div div.panel div.panel-body div.row div div textarea.dialogue").val(this.lineContent);
-      //make new listeners for keypress
-      $("#lineContainer div div.panel div.panel-body div.row div div textarea.dialogue").on("keypress", myKeyPress);
-
-    };
-    that.newStack.push(change);
 
     //make new listeners for keypress
     $("#lineContainer div div.panel div.panel-body div.row div div textarea.dialogue").on("keypress", myKeyPress);
@@ -269,12 +247,22 @@ DialogueBoard.prototype.initialize = function(){
 
   });
 
+};
 
+DialogueBoard.prototype.findGrammars = function(){
+  for(var i = 0; i < this.lineMax; i++){
+    var currDia = $("#lineContainer div#line"+(i+1)+" div.panel div.panel-body div.row div div textarea.dialogue").val();
 
+    var myRegex = /\[\[[^\[\]]+\]\]/g;
 
+    var match = myRegex.exec(currDia);
+    while(match !== null){
+      //This will find each grammar that the user is putting in their dialogue
+      console.log(match);
+      match = myRegex.exec(currDia);
+    }
 
-
-
+  }
 
 };
 
@@ -285,11 +273,10 @@ DialogueBoard.prototype.update = function(){
   //Compile changes from last group of keyboard presses
   if(this.keypressTimer > 0) this.keypressTimer--;
   if(this.keypressTimer === 1){
-    //Put any dialogue change on the change stack
-    var change = new Change();
-    change.oldLines = this.info.lines;
-    for(var i = 0; i < this.lineMax; i++){
+    //TODO Put any dialogue change on the change stack
 
-    }
+    //Listen for any grammars that have been added
+    this.findGrammars();
+
   }
 }
