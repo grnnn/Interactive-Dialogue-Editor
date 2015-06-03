@@ -42,12 +42,31 @@ ExpressionBoard.prototype.getID = function(){
   //document.location.hash += "/" + this.info.id;
   document.location.hash += "/" + 1;
 }
+ExpressionBoard.prototype.reBlur = function(this2){
+
+
+  var that = this;
+  var temp = this2.val();
+  var temp2 = this2.val();
+  temp = temp.replace(/\s+/g, '');
+
+  if(!temp){}
+
+  else{
+    this2.parent().parent().html("<span class='text'>"+temp2+"</span>").on("click", function(){
+      $(this).parent().html("<div class='text'><span class='text'>State Name </span><span><input type='text' id='input" + that.lineCount +"' value='"+temp2+"'class='form-control' style=' display: inline; width: 40%; font-weight: normal; margin-bottom: 12px;'></input></span></div>");
+      //$("#line"+that.lineCount+ " div.panel-default div.panel-body div.row div.col-md-8 div.text span input").on("blur", function(){
+      $("#input" + that.lineCount).on("blur", function(){
+        that.reBlur($(this));
+      });
+    });
+  }
+}
 ExpressionBoard.prototype.addSub = function(lineNum){
   this.lineCount++;
   console.log(this.fieldHTML);
   var that = this;
   var fieldHTML = this.fieldHTML(this.lineCount);
-  console.log($("#panel"+lineNum));
   $("#panel"+lineNum).append("<div id='line" + this.lineCount +"' style='margin-left:20px;'>" + fieldHTML + "</div>");
   $("#line"+ this.lineCount + " div.panel-default div.panel-body div.dropdown ul li a").on("click", function(){
     $(this).parent().parent().parent().find("button").html($(this).text()+"<span class='caret'></span>");
@@ -77,7 +96,13 @@ ExpressionBoard.prototype.addSub = function(lineNum){
 
 
 
-        $(this).parent().parent().html("<span class='text'>"+temp2+"</span>");
+        $(this).parent().parent().html("<span class='text'>"+temp2+"</span>").on("click", function(){
+          $(this).parent().html("<div class='text'><span class='text'>State Name </span><span><input type='text' id='input" + that.lineCount +"' value='"+temp2+"'class='form-control' style=' display: inline; width: 40%; font-weight: normal; margin-bottom: 12px;'></input></span></div>");
+          //$("#line"+that.lineCount+ " div.panel-default div.panel-body div.row div.col-md-8 div.text span input").on("blur", function(){
+          $("#input" + that.lineCount).on("blur", function(){
+            that.reBlur($(this));
+          });
+        });
       }
 
       
@@ -267,7 +292,14 @@ ExpressionBoard.prototype.initialize = function(){
 
 
 
-        $(this).parent().parent().html("<span class='text'>"+temp2+"</span>");
+        $(this).parent().parent().html("<span class='text'>"+temp2+"</span>").on("click", function(){
+
+          $(this).parent().html("<div class='text'><span class='text'>State Name </span><span><input type='text' id='input" + that.lineCount +"' value='"+temp2+"'class='form-control' style=' display: inline; width: 40%; font-weight: normal; margin-bottom: 12px;'></input></span></div>");
+          //$("#line"+that.lineCount+ " div.panel-default div.panel-body div.row div.col-md-8 div.text span input").on("blur", function(){
+          $("#input" + that.lineCount).on("blur", function(){
+            that.reBlur($(this));
+          });
+        });
       }
 
       
